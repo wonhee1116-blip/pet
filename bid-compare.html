@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PetBridge — 견적 비교</title>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;background:#111;display:flex;align-items:center;justify-content:center;font-family:'Pretendard',-apple-system,sans-serif;}
+    .ps{position:relative;}
+    .ps::before{content:'';position:absolute;left:-3px;top:114px;width:3px;height:32px;background:#3a3a3c;border-radius:2px 0 0 2px;box-shadow:0 46px 0 #3a3a3c,0 92px 0 #3a3a3c;}
+    .ps::after{content:'';position:absolute;right:-3px;top:160px;width:3px;height:64px;background:#3a3a3c;border-radius:0 2px 2px 0;}
+    .phone{width:390px;height:844px;background:#F8FAFC;border-radius:52px;border:11px solid #222;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px #3a3a3c,0 50px 100px rgba(0,0,0,.85);transform-origin:top center;}
+    .sb{flex-shrink:0;height:52px;background:#F8FAFC;display:flex;align-items:flex-end;justify-content:space-between;padding:0 28px 10px;position:relative;}
+    .di{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:120px;height:32px;background:#000;border-radius:18px;}
+    .sb-t{font-size:15px;font-weight:700;color:#111827;}
+    .sb-i{display:flex;align-items:center;gap:5px;}
+    .nav{flex-shrink:0;height:52px;display:flex;align-items:center;padding:0 16px;background:#F8FAFC;border-bottom:1px solid #EBEDF0;position:relative;}
+    .back{width:36px;height:36px;display:flex;align-items:center;justify-content:center;text-decoration:none;}
+    .nav-title{position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:700;color:#111827;letter-spacing:-.3px;}
+
+    /* Trainer header tabs */
+    .trainer-tabs{flex-shrink:0;display:flex;border-bottom:1px solid #EBEDF0;background:#F8FAFC;}
+    .ttab{flex:1;height:44px;border:none;background:transparent;font-size:14px;font-weight:600;color:#AEB4BD;font-family:inherit;cursor:pointer;position:relative;transition:color .2s;}
+    .ttab.on{color:#111827;}
+    .ttab.on::after{content:'';position:absolute;bottom:0;left:20%;width:60%;height:2px;background:#FF7A00;border-radius:2px;}
+
+    .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+    .content::-webkit-scrollbar{display:none;}
+
+    /* Trainer mini tops */
+    .trainer-tops{display:flex;border-bottom:8px solid #F0F1F3;}
+    .trainer-top{flex:1;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:5px;border-right:1px solid #EBEDF0;}
+    .trainer-top:last-child{border-right:none;}
+    .t-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;}
+    .t-nm{font-size:12px;font-weight:700;color:#111827;text-align:center;}
+    .t-rt{font-size:12px;color:#F5B301;font-weight:700;}
+    .win-badge{background:#FFF4EC;color:#FF7A00;border-radius:100px;padding:2px 8px;font-size:10px;font-weight:700;}
+
+    /* Compare sections */
+    .cmp-sec{border-bottom:1px solid #F0F1F3;}
+    .cmp-hdr{display:flex;align-items:center;gap:7px;padding:12px 18px 8px;background:#F8FAFC;}
+    .cmp-ic{font-size:14px;}
+    .cmp-lbl{font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;}
+    .cmp-row{display:flex;border-top:1px solid #F4F5F7;}
+    .cc{flex:1;padding:12px 10px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;border-right:1px solid #F4F5F7;}
+    .cc:last-child{border-right:none;}
+    .cv{font-size:14px;font-weight:700;color:#111827;letter-spacing:-.3px;}
+    .csub{font-size:11px;color:#6B7280;}
+    .cbadge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;}
+    .cb-best{background:#FFF4EC;color:#FF7A00;}
+    .cb-good{background:#F0FDF4;color:#059669;}
+    .cb-norm{background:#F3F4F6;color:#6B7280;}
+
+    /* Tag cells */
+    .tc{flex:1;padding:10px 8px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center;border-right:1px solid #F4F5F7;}
+    .tc:last-child{border-right:none;}
+    .tg{padding:3px 7px;background:#EFF6FF;color:#1D4ED8;border-radius:6px;font-size:11px;font-weight:600;}
+
+    /* Review cells */
+    .rvc{flex:1;padding:11px 10px;border-right:1px solid #F4F5F7;}
+    .rvc:last-child{border-right:none;}
+    .rvq{font-size:12px;color:#374151;line-height:1.6;font-style:italic;}
+    .rvby{font-size:11px;color:#AEB4BD;margin-top:4px;}
+
+    /* Bottom */
+    .bottom-cta{flex-shrink:0;padding:12px 20px 28px;background:#F8FAFC;border-top:1px solid #EBEDF0;}
+    .winner-row{font-size:13px;color:#6B7280;text-align:center;margin-bottom:10px;}
+    .cta-row{display:flex;gap:8px;}
+    .btn-g{flex:1;height:52px;background:#fff;color:#374151;border:1.5px solid #EBEDF0;border-radius:14px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;}
+    .btn-p{flex:1;height:52px;background:#FF7A00;color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;box-shadow:0 4px 14px rgba(255,122,0,.3);}
+    .btn-p:active{filter:brightness(.88);}
+  </style>
+</head>
+<body>
+<div class="ps">
+  <div class="phone" id="phone">
+
+    <div class="sb">
+      <div class="di"></div>
+      <span class="sb-t">9:41</span>
+      <div class="sb-i">
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="#111827"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#111827" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="11" r="1" fill="#111827" stroke="none"/><path d="M5.5 8c1.4-1.4 3.6-1.4 5 0"/><path d="M3 5.5c2.8-2.8 7.2-2.8 10 0"/><path d="M.5 3C4.6-1 11.4-1 15.5 3"/></svg>
+        <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.5" stroke="#111827" stroke-opacity=".3"/><rect x="2" y="2" width="18" height="9" rx="2" fill="#111827"/><path d="M24 4.5v4a2 2 0 000-4z" fill="#111827" fill-opacity=".4"/></svg>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="bid-list.html" class="back">
+        <svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#111827" stroke-width="2.2" stroke-linecap="round"><path d="M8.5 1.5L1.5 8.5l7 7"/></svg>
+      </a>
+      <span class="nav-title">견적 비교</span>
+    </div>
+
+    <!-- Tabs (dynamic) -->
+    <div class="trainer-tabs" id="trainerTabs"></div>
+
+    <div class="content">
+      <!-- Trainer mini profiles -->
+      <div class="trainer-tops" id="trainerTops"></div>
+
+      <!-- Compare table -->
+      <div id="cmpTable"></div>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="bottom-cta">
+      <div class="winner-row" id="winnerRow"></div>
+      <div class="cta-row">
+        <a href="bid-list.html" class="btn-g">목록으로</a>
+        <button class="btn-p" id="selectBtn" onclick="doSelect()">
+          선택하기
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function scale(){const p=document.getElementById('phone');const s=Math.min(1,(window.innerWidth-32)/390,(window.innerHeight-32)/844);p.style.transform=`scale(${s})`;document.body.style.alignItems=s<1?'flex-start':'center';document.body.style.paddingTop=s<1?'16px':'0';}
+  scale();window.addEventListener('resize',scale);
+
+  /* ── All trainer data (same as bid-list) ── */
+  const ALL = [
+    {id:1,name:'이준영',initial:'이',grad:'linear-gradient(135deg,#667eea,#764ba2)',title:'행동교정 전문',area:'서울 마포구',rating:4.9,reviews:127,exp:8,price:55000,specs:['행동교정','공격성','짖음'],cert:'공인 훈련사',method:'클리커 훈련',desc:'짖음·공격성 전문. 보호자 교육 병행으로 지속 효과를 보장합니다.',review:'"2주 만에 짖음이 눈에 띄게 줄었어요!"',reviewer:'말티즈 보호자'},
+    {id:2,name:'박민서',initial:'박',grad:'linear-gradient(135deg,#f093fb,#f5576c)',title:'반려견 심리 전문',area:'서울 서대문구',rating:4.7,reviews:84,exp:5,price:45000,specs:['분리불안','심리케어'],cert:'방문 훈련',method:'심리 기반',desc:'보호자와 반려견 모두를 케어하는 심리 기반 훈련법.',review:'"분리불안이 거의 사라졌습니다."',reviewer:'포메라니안 보호자'},
+    {id:3,name:'최수진',initial:'최',grad:'linear-gradient(135deg,#4facfe,#00f2fe)',title:'소형견 전문',area:'서울 은평구',rating:4.8,reviews:56,exp:6,price:50000,specs:['소형견','긍정강화'],cert:'동물심리사',method:'긍정 강화',desc:'소형견 특성에 맞는 긍정 강화 훈련.',review:'"강아지가 스트레스 없이 훈련받았어요."',reviewer:'시추 보호자'},
+  ];
+
+  /* ── Load selected IDs ── */
+  const ids = JSON.parse(localStorage.getItem('pb_compare') || '[1,2]');
+  const trainers = ids.map(id => ALL.find(t => t.id === Number(id))).filter(Boolean);
+  if (trainers.length < 2) trainers.push(...ALL.slice(0, 2 - trainers.length));
+
+  /* ── Find winner (highest rating) ── */
+  const winner = trainers.reduce((a, b) => a.rating >= b.rating ? a : b);
+  let activeIdx = 0;
+
+  /* ── Render tabs ── */
+  function renderTabs() {
+    document.getElementById('trainerTabs').innerHTML =
+      trainers.map((t,i) =>
+        `<button class="ttab${i===activeIdx?' on':''}" onclick="setTab(${i})">${t.name}</button>`
+      ).join('');
+  }
+
+  function setTab(idx) {
+    activeIdx = idx;
+    renderTabs();
+    // Update select button
+    const t = trainers[idx];
+    document.getElementById('selectBtn').innerHTML = `${t.name} 선택 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+  }
+
+  function doSelect() {
+    const t = trainers[activeIdx];
+    localStorage.setItem('pb_trainer', t.name);
+    window.location.href = 'trainer-select.html';
+  }
+
+  /* ── Render trainer tops ── */
+  function renderTops() {
+    document.getElementById('trainerTops').innerHTML = trainers.map(t => `
+      <div class="trainer-top">
+        <div class="t-av" style="background:${t.grad}">${t.initial}</div>
+        <div class="t-nm">${t.name}</div>
+        <div class="t-rt">★ ${t.rating}</div>
+        ${t.id === winner.id ? '<div class="win-badge">추천</div>' : ''}
+      </div>`).join('');
+  }
+
+  /* ── Badge helpers ── */
+  function priceBadge(t) {
+    const minPrice = Math.min(...trainers.map(x=>x.price));
+    if(t.price===minPrice) return `<div class="cbadge cb-best">최저가</div>`;
+    if(t.price===Math.max(...trainers.map(x=>x.price))) return `<div class="cbadge cb-norm">표준가</div>`;
+    return `<div class="cbadge cb-good">적정가</div>`;
+  }
+  function expBadge(t) {
+    const maxExp = Math.max(...trainers.map(x=>x.exp));
+    if(t.exp===maxExp) return `<div class="cbadge cb-best">최다 경력</div>`;
+    if(t.exp===Math.min(...trainers.map(x=>x.exp))) return `<div class="cbadge cb-norm">중급</div>`;
+    return `<div class="cbadge cb-good">숙련</div>`;
+  }
+  function ratingBadge(t) {
+    const maxR = Math.max(...trainers.map(x=>x.rating));
+    if(t.rating===maxR) return `<div class="cbadge cb-best">최고 평점</div>`;
+    return `<div class="cbadge cb-good">우수</div>`;
+  }
+
+  /* ── Render comparison table ── */
+  function renderTable() {
+    const sections = [
+      {
+        ic:'💰', lbl:'1회 비용',
+        rows: [trainers.map(t=>`<div class="cv">${t.price.toLocaleString()}원</div>${priceBadge(t)}`)]
+      },
+      {
+        ic:'🏅', lbl:'경력 및 자격',
+        rows: [trainers.map(t=>`<div class="cv">${t.exp}년</div>${expBadge(t)}`)]
+      },
+      {
+        ic:'⭐', lbl:'평점 & 리뷰',
+        rows: [trainers.map(t=>`<div class="cv">${t.rating}</div><div class="csub">${t.reviews}개 리뷰</div>${ratingBadge(t)}`)]
+      },
+      {
+        ic:'🎯', lbl:'전문 분야',
+        rows: [trainers.map(t=>t.specs.map(s=>`<span class="tg">${s}</span>`).join(''))],
+        tagMode: true
+      },
+      {
+        ic:'🎓', lbl:'훈련 방식',
+        rows: [trainers.map(t=>`<div class="cv" style="font-size:13px">${t.method}</div>`)]
+      },
+      {
+        ic:'💬', lbl:'최신 후기',
+        rows: [trainers.map(t=>`<div class="rvq">${t.review}</div><div class="rvby">— ${t.reviewer}</div>`)],
+        reviewMode: true
+      },
+    ];
+
+    document.getElementById('cmpTable').innerHTML = sections.map(sec => `
+      <div class="cmp-sec">
+        <div class="cmp-hdr"><span class="cmp-ic">${sec.ic}</span><span class="cmp-lbl">${sec.lbl}</span></div>
+        ${sec.rows.map(row => {
+          if (sec.tagMode) return `<div class="cmp-row">${row.map(c=>`<div class="tc">${c}</div>`).join('')}</div>`;
+          if (sec.reviewMode) return `<div class="cmp-row">${row.map(c=>`<div class="rvc">${c}</div>`).join('')}</div>`;
+          return `<div class="cmp-row">${row.map(c=>`<div class="cc">${c}</div>`).join('')}</div>`;
+        }).join('')}
+      </div>`).join('') + '<div style="height:12px"></div>';
+  }
+
+  /* ── Winner row ── */
+  function renderWinner() {
+    document.getElementById('winnerRow').innerHTML =
+      `⭐ 종합 점수 1위: <strong style="color:#FF7A00">${winner.name} 훈련사</strong>`;
+    document.getElementById('selectBtn').innerHTML =
+      `${trainers[0].name} 선택 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+  }
+
+  /* ── Init ── */
+  renderTabs();
+  renderTops();
+  renderTable();
+  renderWinner();
+</script>
+</body>
+</html>

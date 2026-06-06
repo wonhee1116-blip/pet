@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PetBridge — 홈</title>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;background:#111;display:flex;align-items:center;justify-content:center;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;}
+
+    /* ── Onboarding Splash ── */
+    .splash{
+      position:absolute;inset:0;z-index:100;
+      background:linear-gradient(160deg,#FF7A00 0%,#FF9A3C 40%,#FFB347 100%);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      border-radius:41px;
+      transition:opacity .55s cubic-bezier(.4,0,.2,1), transform .55s cubic-bezier(.4,0,.2,1);
+    }
+    .splash.hide{opacity:0;transform:scale(1.04);pointer-events:none;}
+
+    /* Noise texture overlay */
+    .splash::before{
+      content:'';position:absolute;inset:0;border-radius:41px;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.07'/%3E%3C/svg%3E");
+      opacity:.35;pointer-events:none;
+    }
+
+    /* Paw print decorations */
+    .splash-paws{position:absolute;inset:0;border-radius:41px;overflow:hidden;pointer-events:none;}
+    .paw{position:absolute;opacity:.13;font-size:48px;animation:pawFloat 3s ease-in-out infinite;}
+    .paw:nth-child(1){top:8%;left:5%;animation-delay:0s;font-size:36px;}
+    .paw:nth-child(2){top:15%;right:8%;animation-delay:.5s;font-size:52px;}
+    .paw:nth-child(3){bottom:22%;left:8%;animation-delay:1s;font-size:44px;}
+    .paw:nth-child(4){bottom:10%;right:6%;animation-delay:1.5s;font-size:38px;}
+    .paw:nth-child(5){top:50%;left:2%;animation-delay:.8s;font-size:30px;}
+    @keyframes pawFloat{0%,100%{transform:translateY(0) rotate(-10deg);}50%{transform:translateY(-10px) rotate(5deg);}}
+
+    /* Logo area */
+    .splash-logo-wrap{
+      position:relative;z-index:1;
+      display:flex;flex-direction:column;align-items:center;gap:0;
+      animation:splashIn .6s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes splashIn{from{opacity:0;transform:scale(.7) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);}}
+
+    /* SVG Logo */
+    .logo-svg-wrap{
+      width:100px;height:100px;
+      background:rgba(255,255,255,.2);
+      border-radius:28px;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 8px 32px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.4);
+      backdrop-filter:blur(4px);
+      margin-bottom:20px;
+    }
+
+    .splash-name{
+      font-size:36px;font-weight:900;color:#fff;
+      letter-spacing:-1px;line-height:1;
+      text-shadow:0 2px 12px rgba(0,0,0,.15);
+    }
+    .splash-name em{color:rgba(255,255,255,.65);font-style:normal;}
+
+    .splash-tag{
+      margin-top:10px;
+      font-size:14px;font-weight:500;color:rgba(255,255,255,.85);
+      letter-spacing:.3px;text-align:center;line-height:1.6;
+      animation:splashIn .6s cubic-bezier(.34,1.56,.64,1) .2s both;
+    }
+
+    /* Value pills */
+    .splash-pills{
+      margin-top:28px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+      animation:splashIn .6s cubic-bezier(.34,1.56,.64,1) .35s both;
+    }
+    .pill{
+      background:rgba(255,255,255,.22);
+      border:1px solid rgba(255,255,255,.35);
+      border-radius:100px;padding:6px 14px;
+      font-size:12px;font-weight:600;color:#fff;
+      backdrop-filter:blur(4px);
+    }
+
+    /* Progress bar */
+    .splash-progress{
+      position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+      width:56px;height:4px;background:rgba(255,255,255,.25);border-radius:2px;overflow:hidden;
+    }
+    .splash-progress-bar{
+      height:100%;width:0;background:#fff;border-radius:2px;
+      animation:progressFill 4.2s linear .4s forwards;
+    }
+    @keyframes progressFill{from{width:0;}to{width:100%;}}
+
+    /* ── Phone Shell ── */
+    .ps{position:relative;}
+    .ps::before{content:'';position:absolute;left:-3px;top:114px;width:3px;height:32px;background:#3a3a3c;border-radius:2px 0 0 2px;box-shadow:0 46px 0 #3a3a3c,0 92px 0 #3a3a3c;}
+    .ps::after{content:'';position:absolute;right:-3px;top:160px;width:3px;height:64px;background:#3a3a3c;border-radius:0 2px 2px 0;}
+    .phone{width:390px;height:844px;background:#F8FAFC;border-radius:52px;border:11px solid #222;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px #3a3a3c,0 50px 100px rgba(0,0,0,.85);transform-origin:top center;}
+
+    /* ── Status Bar ── */
+    .sb{flex-shrink:0;height:52px;background:#F8FAFC;display:flex;align-items:flex-end;justify-content:space-between;padding:0 28px 10px;position:relative;}
+    .di{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:120px;height:32px;background:#000;border-radius:18px;}
+    .sb-t{font-size:15px;font-weight:700;color:#111827;letter-spacing:-.2px;}
+    .sb-i{display:flex;align-items:center;gap:5px;}
+
+    /* ── App Header ── */
+    .app-hdr{flex-shrink:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:#F8FAFC;border-bottom:1px solid #EBEDF0;}
+    .logo{font-size:22px;font-weight:800;color:#FF7A00;letter-spacing:-.5px;}
+    .logo span{color:#111827;}
+
+    /* ── Content ── */
+    .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+    .content::-webkit-scrollbar{display:none;}
+
+    /* Hero */
+    .hero{background:linear-gradient(150deg,#FFF4EC 0%,#FFE0B8 100%);padding:28px 20px 26px;position:relative;overflow:hidden;}
+    .hero-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,122,0,.12);color:#FF7A00;border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600;margin-bottom:12px;}
+    .hero-title{font-size:24px;font-weight:800;color:#111827;line-height:1.3;letter-spacing:-.5px;margin-bottom:8px;}
+    .hero-desc{font-size:14px;color:#6B7280;line-height:1.6;margin-bottom:22px;}
+    .hero-btn{display:inline-flex;align-items:center;gap:8px;background:#FF7A00;color:#fff;border-radius:14px;padding:14px 22px;font-size:15px;font-weight:700;font-family:inherit;text-decoration:none;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(255,122,0,.35);}
+    .hero-btn:active{filter:brightness(.88);}
+    .hero-art{position:absolute;right:16px;bottom:-6px;font-size:96px;opacity:.2;line-height:1;pointer-events:none;}
+
+    /* Stats */
+    .stats{display:flex;border-bottom:8px solid #F0F1F3;}
+    .stat{flex:1;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:3px;border-right:1px solid #EBEDF0;}
+    .stat:last-child{border-right:none;}
+    .stat-v{font-size:20px;font-weight:800;color:#FF7A00;letter-spacing:-.5px;}
+    .stat-l{font-size:11px;color:#6B7280;font-weight:500;}
+
+    /* Sections */
+    .sec{padding:20px 20px 0;}
+    .sec-t{font-size:16px;font-weight:700;color:#111827;letter-spacing:-.3px;margin-bottom:14px;}
+
+    /* Quick grid */
+    .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+    .qcard{background:#fff;border:1px solid #EBEDF0;border-radius:12px;padding:18px 14px;cursor:pointer;text-decoration:none;display:block;transition:background .1s;}
+    .qcard:active{background:#FAFAFA;}
+    .qcard-ic{font-size:26px;display:block;margin-bottom:10px;}
+    .qcard-name{font-size:14px;font-weight:700;color:#111827;letter-spacing:-.2px;margin-bottom:3px;}
+    .qcard-desc{font-size:12px;color:#6B7280;}
+
+    /* Steps */
+    .steps{background:#fff;border:1px solid #EBEDF0;border-radius:12px;overflow:hidden;margin-bottom:24px;}
+    .step-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid #F4F5F7;}
+    .step-row:last-child{border-bottom:none;}
+    .step-n{width:30px;height:30px;border-radius:50%;background:#FF7A00;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .step-name{font-size:14px;font-weight:600;color:#111827;margin-bottom:2px;}
+    .step-desc{font-size:12px;color:#6B7280;}
+
+    /* Bottom Tab */
+    .tab-bar{flex-shrink:0;background:#fff;border-top:1px solid #EBEDF0;display:flex;padding:10px 0 0;}
+    .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;padding-bottom:22px;cursor:pointer;}
+    .tab-l{font-size:10px;font-weight:500;color:#AEB4BD;}
+    .tab.on .tab-l{color:#FF7A00;}
+  </style>
+</head>
+<body>
+<div class="ps">
+  <div class="phone" id="phone">
+
+    <!-- ── Onboarding Splash ── -->
+    <div class="splash" id="splash">
+      <div class="splash-paws">
+        <span class="paw">🐾</span>
+        <span class="paw">🐾</span>
+        <span class="paw">🐾</span>
+        <span class="paw">🐾</span>
+        <span class="paw">🐾</span>
+      </div>
+
+      <div class="splash-logo-wrap">
+        <!-- SVG Logo: bridge + paw -->
+        <div class="logo-svg-wrap">
+          <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Bridge arc -->
+            <path d="M8 40 Q30 10 52 40" stroke="white" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <!-- Bridge pillars -->
+            <line x1="8" y1="40" x2="8" y2="50" stroke="white" stroke-width="4" stroke-linecap="round"/>
+            <line x1="52" y1="40" x2="52" y2="50" stroke="white" stroke-width="4" stroke-linecap="round"/>
+            <!-- Road -->
+            <line x1="4" y1="50" x2="56" y2="50" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- Paw on bridge -->
+            <circle cx="30" cy="24" r="3.5" fill="white" opacity=".95"/>
+            <circle cx="23.5" cy="20" r="2.2" fill="white" opacity=".8"/>
+            <circle cx="36.5" cy="20" r="2.2" fill="white" opacity=".8"/>
+            <circle cx="27" cy="16.5" r="2" fill="white" opacity=".7"/>
+            <circle cx="33" cy="16.5" r="2" fill="white" opacity=".7"/>
+          </svg>
+        </div>
+
+        <div class="splash-name">Pet<em>Bridge</em></div>
+        <div class="splash-tag">반려견과 훈련사 사이,<br>믿을 수 있는 다리를 놓다</div>
+
+        <div class="splash-pills">
+          <span class="pill">역경매 매칭</span>
+          <span class="pill">AI 행동분석</span>
+          <span class="pill">등급 신뢰</span>
+        </div>
+      </div>
+
+      <div class="splash-progress"><div class="splash-progress-bar"></div></div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="sb">
+      <div class="di"></div>
+      <span class="sb-t">9:41</span>
+      <div class="sb-i">
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="#111827"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#111827" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="11" r="1" fill="#111827" stroke="none"/><path d="M5.5 8c1.4-1.4 3.6-1.4 5 0"/><path d="M3 5.5c2.8-2.8 7.2-2.8 10 0"/><path d="M.5 3C4.6-1 11.4-1 15.5 3"/></svg>
+        <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.5" stroke="#111827" stroke-opacity=".3"/><rect x="2" y="2" width="18" height="9" rx="2" fill="#111827"/><path d="M24 4.5v4a2 2 0 000-4z" fill="#111827" fill-opacity=".4"/></svg>
+      </div>
+    </div>
+
+    <!-- App Header -->
+    <div class="app-hdr">
+      <div class="logo">Pet<span>Bridge</span></div>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/><circle cx="18" cy="8" r="3" fill="#FF7A00" stroke="none"/></svg>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-badge">🐾 반려견 훈련 서비스</div>
+        <div class="hero-title">반려견 문제행동,<br>전문가에게 맡기세요</div>
+        <div class="hero-desc">검증된 훈련사에게<br>맞춤 견적을 받아보세요</div>
+        <a href="diagnosis.html" class="hero-btn">
+          문제행동 진단 시작하기
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <div class="hero-art">🐕</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat"><div class="stat-v">1,240+</div><div class="stat-l">누적 의뢰</div></div>
+        <div class="stat"><div class="stat-v">68명</div><div class="stat-l">전문 훈련사</div></div>
+        <div class="stat"><div class="stat-v">4.8★</div><div class="stat-l">평균 별점</div></div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="sec">
+        <div class="sec-t">빠른 실행</div>
+        <div class="qgrid">
+          <a href="diagnosis.html" class="qcard">
+            <span class="qcard-ic">💬</span>
+            <div class="qcard-name">채팅</div>
+            <div class="qcard-desc">훈련사와 대화하기</div>
+          </a>
+          <a href="bid-list.html" class="qcard">
+            <span class="qcard-ic">📋</span>
+            <div class="qcard-name">의뢰 현황</div>
+            <div class="qcard-desc">진행 중인 의뢰</div>
+          </a>
+          <a href="request.html" class="qcard">
+            <span class="qcard-ic">✏️</span>
+            <div class="qcard-name">직접 의뢰</div>
+            <div class="qcard-desc">훈련사에게 요청</div>
+          </a>
+          <div class="qcard">
+            <span class="qcard-ic">⭐</span>
+            <div class="qcard-name">훈련사 찾기</div>
+            <div class="qcard-desc">내 근처 전문가</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="sec">
+        <div class="sec-t">이용 방법</div>
+        <div class="steps">
+          <div class="step-row">
+            <div class="step-n">1</div>
+            <div><div class="step-name">문제행동 진단</div><div class="step-desc">체크리스트로 반려견 행동 분석</div></div>
+          </div>
+          <div class="step-row">
+            <div class="step-n">2</div>
+            <div><div class="step-name">훈련 의뢰 등록</div><div class="step-desc">진단 결과 기반 의뢰서 작성</div></div>
+          </div>
+          <div class="step-row">
+            <div class="step-n">3</div>
+            <div><div class="step-name">견적 비교 선택</div><div class="step-desc">여러 훈련사 제안 비교 후 선택</div></div>
+          </div>
+          <div class="step-row">
+            <div class="step-n">4</div>
+            <div><div class="step-name">훈련 시작</div><div class="step-desc">전문 훈련사와 맞춤 훈련 진행</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:20px"></div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="tab-bar">
+      <div class="tab on">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#FF7A00"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10" fill="#fff"/></svg>
+        <span class="tab-l" style="color:#FF7A00">홈</span>
+      </div>
+      <a href="bid-list.html" class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AEB4BD" stroke-width="2" stroke-linecap="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg>
+        <span class="tab-l">의뢰현황</span>
+      </a>
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AEB4BD" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <span class="tab-l">훈련사</span>
+      </div>
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AEB4BD" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-l">마이</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  function scale(){
+    const p=document.getElementById('phone');
+    const s=Math.min(1,(window.innerWidth-32)/390,(window.innerHeight-32)/844);
+    p.style.transform=`scale(${s})`;
+    document.body.style.alignItems=s<1?'flex-start':'center';
+    document.body.style.paddingTop=s<1?'16px':'0';
+  }
+  scale();window.addEventListener('resize',scale);
+
+  // Splash: hide after 5s
+  setTimeout(()=>{
+    const s=document.getElementById('splash');
+    s.classList.add('hide');
+    setTimeout(()=>{s.style.display='none';},600);
+  },900);
+</script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PetBridge — 진단 결과</title>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;background:#111;display:flex;align-items:center;justify-content:center;font-family:'Pretendard',-apple-system,sans-serif;}
+    .ps{position:relative;}
+    .ps::before{content:'';position:absolute;left:-3px;top:114px;width:3px;height:32px;background:#3a3a3c;border-radius:2px 0 0 2px;box-shadow:0 46px 0 #3a3a3c,0 92px 0 #3a3a3c;}
+    .ps::after{content:'';position:absolute;right:-3px;top:160px;width:3px;height:64px;background:#3a3a3c;border-radius:0 2px 2px 0;}
+    .phone{width:390px;height:844px;background:#F8FAFC;border-radius:52px;border:11px solid #222;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px #3a3a3c,0 50px 100px rgba(0,0,0,.85);transform-origin:top center;}
+    .sb{flex-shrink:0;height:52px;background:#F8FAFC;display:flex;align-items:flex-end;justify-content:space-between;padding:0 28px 10px;position:relative;}
+    .di{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:120px;height:32px;background:#000;border-radius:18px;}
+    .sb-t{font-size:15px;font-weight:700;color:#111827;}
+    .sb-i{display:flex;align-items:center;gap:5px;}
+    .nav{flex-shrink:0;height:52px;display:flex;align-items:center;padding:0 16px;background:#F8FAFC;border-bottom:1px solid #EBEDF0;position:relative;}
+    .back{width:36px;height:36px;display:flex;align-items:center;justify-content:center;text-decoration:none;}
+    .nav-title{position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:700;color:#111827;letter-spacing:-.3px;white-space:nowrap;}
+    .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+    .content::-webkit-scrollbar{display:none;}
+
+    /* Score card */
+    .score-card{background:linear-gradient(135deg,#FF7A00,#FF9A3D);margin:14px 16px;border-radius:16px;padding:22px 20px;color:#fff;position:relative;overflow:hidden;}
+    .score-card::after{content:'';position:absolute;right:-20px;bottom:-20px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.08);}
+    .score-label{font-size:12px;font-weight:600;opacity:.9;margin-bottom:5px;}
+    .score-name{font-size:22px;font-weight:800;letter-spacing:-.4px;margin-bottom:3px;}
+    .score-desc{font-size:13px;opacity:.85;line-height:1.5;white-space:pre-line;}
+    .score-badge{position:absolute;top:18px;right:18px;width:52px;height:52px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;}
+
+    /* Section label */
+    .sec-lbl{font-size:15px;font-weight:700;color:#111827;padding:0 20px;margin-bottom:10px;}
+
+    /* Problem list */
+    .prob-list{margin:0 16px 16px;display:flex;flex-direction:column;gap:8px;}
+    .prob-item{background:#fff;border:1px solid #EBEDF0;border-radius:12px;padding:13px 16px;display:flex;align-items:center;gap:12px;}
+    .prob-ic{font-size:20px;flex-shrink:0;}
+    .prob-name{font-size:14px;font-weight:600;color:#111827;flex:1;}
+    .prob-badge{padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;}
+    .badge-high{background:#FEE2E2;color:#DC2626;}
+    .badge-mid{background:#FEF3C7;color:#D97706;}
+    .badge-low{background:#D1FAE5;color:#059669;}
+
+    /* Severity score */
+    .score-box{margin:0 16px 16px;background:#fff;border:1px solid #EBEDF0;border-radius:12px;padding:18px;}
+    .score-box-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+    .score-box-label{font-size:14px;font-weight:700;color:#111827;}
+    .score-num{display:flex;align-items:baseline;gap:3px;}
+    .score-big{font-size:32px;font-weight:800;letter-spacing:-.5px;}
+    .score-max{font-size:14px;color:#AEB4BD;font-weight:500;}
+    .score-track{height:10px;background:#F0F1F3;border-radius:100px;overflow:hidden;margin-bottom:8px;}
+    .score-fill{height:100%;border-radius:100px;transition:width 1s cubic-bezier(.22,1,.36,1);}
+    .score-ticks{display:flex;justify-content:space-between;}
+    .score-tick{font-size:11px;color:#AEB4BD;}
+    .score-legend{display:flex;gap:12px;margin-top:10px;}
+    .legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#6B7280;}
+    .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+    /* Training methods */
+    .train-list{margin:0 16px 16px;display:flex;flex-direction:column;gap:8px;}
+    .train-item{background:#fff;border:1px solid #EBEDF0;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;}
+    .train-priority{flex-shrink:0;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap;margin-top:1px;}
+    .pri-first{background:#FEE2E2;color:#DC2626;}
+    .pri-rec{background:#FEF3C7;color:#D97706;}
+    .pri-sub{background:#E0F2FE;color:#0369A1;}
+    .train-body{}
+    .train-name{font-size:14px;font-weight:700;color:#111827;margin-bottom:3px;}
+    .train-desc{font-size:12px;color:#6B7280;line-height:1.5;}
+
+    /* Bottom */
+    .bottom-cta{flex-shrink:0;padding:12px 20px;background:#F8FAFC;border-top:1px solid #EBEDF0;}
+    .btn-p{width:100%;height:56px;background:#FF7A00;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;box-shadow:0 4px 14px rgba(255,122,0,.3);}
+    .btn-p:active{filter:brightness(.88);}
+    .btn-g{width:100%;height:48px;background:#fff;color:#6B7280;border:1.5px solid #EBEDF0;border-radius:14px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:8px;}
+  </style>
+</head>
+<body>
+<div class="ps">
+  <div class="phone" id="phone">
+
+    <div class="sb">
+      <div class="di"></div>
+      <span class="sb-t">9:41</span>
+      <div class="sb-i">
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="#111827"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#111827" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="11" r="1" fill="#111827" stroke="none"/><path d="M5.5 8c1.4-1.4 3.6-1.4 5 0"/><path d="M3 5.5c2.8-2.8 7.2-2.8 10 0"/><path d="M.5 3C4.6-1 11.4-1 15.5 3"/></svg>
+        <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.5" stroke="#111827" stroke-opacity=".3"/><rect x="2" y="2" width="18" height="9" rx="2" fill="#111827"/><path d="M24 4.5v4a2 2 0 000-4z" fill="#111827" fill-opacity=".4"/></svg>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="video-upload.html" class="back">
+        <svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#111827" stroke-width="2.2" stroke-linecap="round"><path d="M8.5 1.5L1.5 8.5l7 7"/></svg>
+      </a>
+      <span class="nav-title">진단 결과</span>
+    </div>
+
+    <div class="content">
+
+      <!-- Score Card -->
+      <div class="score-card" id="scoreCard">
+        <div class="score-label">진단 완료</div>
+        <div class="score-name" id="scoreTitle">주의 필요</div>
+        <div class="score-desc" id="scoreDesc">3가지 문제행동이 발견되었어요.\n전문 훈련사의 도움이 필요합니다.</div>
+        <div class="score-badge" id="scoreBadge">⚠️</div>
+      </div>
+
+      <!-- 발견된 문제행동 -->
+      <div class="sec-lbl">발견된 문제행동</div>
+      <div class="prob-list" id="probList"></div>
+
+      <!-- 심각도 점수 -->
+      <div class="sec-lbl">심각도 점수</div>
+      <div class="score-box">
+        <div class="score-box-top">
+          <div class="score-box-label" id="scoreLevelLabel">주의 필요</div>
+          <div class="score-num">
+            <span class="score-big" id="scoreNumBig">0</span>
+            <span class="score-max">/ 10</span>
+          </div>
+        </div>
+        <div class="score-track">
+          <div class="score-fill" id="scoreFill" style="width:0%"></div>
+        </div>
+        <div class="score-ticks">
+          <span class="score-tick">경미</span>
+          <span class="score-tick">보통</span>
+          <span class="score-tick">심각</span>
+        </div>
+        <div class="score-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#10B981"></div>0–3 경미</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F59E0B"></div>4–6 주의</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#EF4444"></div>7–10 심각</div>
+        </div>
+      </div>
+
+      <!-- 추천 훈련 방식 -->
+      <div class="sec-lbl">추천 훈련 방식</div>
+      <div class="train-list" id="trainList"></div>
+
+      <div style="height:16px"></div>
+    </div>
+
+    <div class="bottom-cta">
+      <a href="request.html" class="btn-p">
+        훈련 의뢰 시작하기
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="home.html" class="btn-g">나중에 하기</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function scale(){const p=document.getElementById('phone');const s=Math.min(1,(window.innerWidth-32)/390,(window.innerHeight-32)/844);p.style.transform=`scale(${s})`;document.body.style.alignItems=s<1?'flex-start':'center';document.body.style.paddingTop=s<1?'16px':'0';}
+  scale();window.addEventListener('resize',scale);
+
+  /* ── Data Maps ── */
+  const severityMap = {
+    '과도한 짖음':'mid','물기·공격성':'high','분리불안':'high',
+    '대소변 실수':'low','리드줄 당김':'low','과잉흥분':'mid',
+    '물건 파괴':'mid','낯선 것 두려움':'mid'
+  };
+  const icons = {
+    '과도한 짖음':'🔊','물기·공격성':'😠','분리불안':'😢',
+    '대소변 실수':'💦','리드줄 당김':'🦮','과잉흥분':'⚡',
+    '물건 파괴':'🧸','낯선 것 두려움':'😱'
+  };
+  const badgeTxt = {high:'심각',mid:'주의',low:'경미'};
+  const badgeCls = {high:'badge-high',mid:'badge-mid',low:'badge-low'};
+
+  /* 훈련 방식 맵 */
+  const trainingMap = {
+    '물기·공격성':   {name:'긍정 강화 훈련',      desc:'칭찬·보상으로 올바른 행동을 강화하고 공격 충동을 줄입니다'},
+    '분리불안':      {name:'점진적 독립 훈련',     desc:'혼자 있는 시간을 단계적으로 늘려 안정감을 형성합니다'},
+    '과도한 짖음':   {name:'체계적 둔감화',        desc:'짖음 유발 자극에 반복 노출해 반응 강도를 점차 줄입니다'},
+    '과잉흥분':      {name:'충동 조절 훈련',       desc:'흥분 상황에서 앉기·기다리기로 자기 조절 능력을 키웁니다'},
+    '물건 파괴':     {name:'환경 관리 훈련',       desc:'적절한 씹기 대상 제공과 행동 리디렉션으로 교정합니다'},
+    '낯선 것 두려움':{name:'사회화 훈련',          desc:'다양한 사람·장소·소리에 점진적으로 노출해 자신감을 키웁니다'},
+    '리드줄 당김':   {name:'리드줄 매너 훈련',     desc:'보호자 옆 걷기 습관을 형성해 산책 중 안전을 확보합니다'},
+    '대소변 실수':   {name:'루틴 배변 훈련',       desc:'규칙적인 배변 시간과 장소를 반복 학습시킵니다'},
+  };
+  const supplementary = [
+    {name:'클리커 훈련',   desc:'일관된 신호로 원하는 행동을 명확하게 전달하는 보조 도구'},
+    {name:'보호자 교육',   desc:'훈련 효과 유지를 위한 보호자 대응 방식 코칭'},
+  ];
+
+  /* ── Load data ── */
+  const problems = JSON.parse(localStorage.getItem('pb_problems') || '["과도한 짖음","분리불안","리드줄 당김"]');
+
+  /* ── Render problem list ── */
+  const list = document.getElementById('probList');
+  problems.forEach(p => {
+    const sev = severityMap[p] || 'mid';
+    list.innerHTML += `<div class="prob-item">
+      <span class="prob-ic">${icons[p]||'🐾'}</span>
+      <span class="prob-name">${p}</span>
+      <span class="prob-badge ${badgeCls[sev]}">${badgeTxt[sev]}</span>
+    </div>`;
+  });
+
+  /* ── Calculate severity score ── */
+  const points = {high:3, mid:2, low:1};
+  const rawScore = problems.reduce((sum, p) => sum + (points[severityMap[p]||'mid']||2), 0);
+  const score = Math.min(10, Math.round(rawScore * 10 / (problems.length * 3)));
+  const highCount = problems.filter(p => severityMap[p]==='high').length;
+  const n = problems.length;
+
+  /* Score bar & num */
+  setTimeout(() => {
+    document.getElementById('scoreNumBig').textContent = score;
+    const fill = document.getElementById('scoreFill');
+    fill.style.width = (score * 10) + '%';
+    if (score <= 3) {
+      fill.style.background = '#10B981';
+      document.getElementById('scoreLevelLabel').textContent = '경미한 수준';
+      document.getElementById('scoreLevelLabel').style.color = '#059669';
+    } else if (score <= 6) {
+      fill.style.background = '#F59E0B';
+      document.getElementById('scoreLevelLabel').textContent = '주의 필요';
+      document.getElementById('scoreLevelLabel').style.color = '#D97706';
+    } else {
+      fill.style.background = '#EF4444';
+      document.getElementById('scoreLevelLabel').textContent = '심각한 수준';
+      document.getElementById('scoreLevelLabel').style.color = '#DC2626';
+    }
+  }, 150);
+
+  /* ── Score card ── */
+  const card = document.getElementById('scoreCard');
+  if (highCount >= 2 || n >= 5) {
+    document.getElementById('scoreTitle').textContent = '즉각 개선 필요';
+    document.getElementById('scoreBadge').textContent = '🚨';
+    document.getElementById('scoreDesc').textContent = `${n}가지 문제행동이 발견되었어요.\n전문 훈련사의 즉각적인 개입이 필요합니다.`;
+    card.style.background = 'linear-gradient(135deg,#DC2626,#EF4444)';
+  } else if (n <= 2 && highCount === 0) {
+    document.getElementById('scoreTitle').textContent = '경미한 수준';
+    document.getElementById('scoreBadge').textContent = '✅';
+    document.getElementById('scoreDesc').textContent = `${n}가지 문제행동이 발견되었어요.\n조기에 교정하면 빠른 개선이 가능해요.`;
+    card.style.background = 'linear-gradient(135deg,#059669,#10B981)';
+  } else {
+    document.getElementById('scoreTitle').textContent = '주의 필요';
+    document.getElementById('scoreDesc').textContent = `${n}가지 문제행동이 발견되었어요.\n전문 훈련사의 도움이 필요합니다.`;
+  }
+
+  /* ── Render training methods ── */
+  const trainList = document.getElementById('trainList');
+  const highProbs  = problems.filter(p => severityMap[p]==='high');
+  const midProbs   = problems.filter(p => severityMap[p]==='mid');
+  const lowProbs   = problems.filter(p => severityMap[p]==='low');
+
+  // Deduplicate methods
+  const addedNames = new Set();
+  function addTrainItem(p, priClass, priLabel) {
+    const m = trainingMap[p];
+    if (!m || addedNames.has(m.name)) return;
+    addedNames.add(m.name);
+    trainList.innerHTML += `<div class="train-item">
+      <div class="train-priority ${priClass}">${priLabel}</div>
+      <div class="train-body">
+        <div class="train-name">${m.name}</div>
+        <div class="train-desc">${m.desc}</div>
+      </div>
+    </div>`;
+  }
+
+  highProbs.forEach(p => addTrainItem(p, 'pri-first', '최우선'));
+  midProbs.forEach(p  => addTrainItem(p, 'pri-rec',   '권장'));
+  lowProbs.forEach(p  => addTrainItem(p, 'pri-sub',   '보조'));
+
+  // Always add supplementary
+  supplementary.forEach(m => {
+    if (!addedNames.has(m.name)) {
+      trainList.innerHTML += `<div class="train-item">
+        <div class="train-priority pri-sub">보조</div>
+        <div class="train-body">
+          <div class="train-name">${m.name}</div>
+          <div class="train-desc">${m.desc}</div>
+        </div>
+      </div>`;
+    }
+  });
+</script>
+</body>
+</html>

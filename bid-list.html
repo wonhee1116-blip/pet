@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PetBridge — 받은 견적</title>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;background:#111;display:flex;align-items:center;justify-content:center;font-family:'Pretendard',-apple-system,sans-serif;}
+    .ps{position:relative;}
+    .ps::before{content:'';position:absolute;left:-3px;top:114px;width:3px;height:32px;background:#3a3a3c;border-radius:2px 0 0 2px;box-shadow:0 46px 0 #3a3a3c,0 92px 0 #3a3a3c;}
+    .ps::after{content:'';position:absolute;right:-3px;top:160px;width:3px;height:64px;background:#3a3a3c;border-radius:0 2px 2px 0;}
+    .phone{width:390px;height:844px;background:#F8FAFC;border-radius:52px;border:11px solid #222;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px #3a3a3c,0 50px 100px rgba(0,0,0,.85);transform-origin:top center;position:relative;}
+    .sb{flex-shrink:0;height:52px;background:#F8FAFC;display:flex;align-items:flex-end;justify-content:space-between;padding:0 28px 10px;position:relative;}
+    .di{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:120px;height:32px;background:#000;border-radius:18px;}
+    .sb-t{font-size:15px;font-weight:700;color:#111827;}
+    .sb-i{display:flex;align-items:center;gap:5px;}
+    .nav{flex-shrink:0;height:56px;display:flex;align-items:center;padding:0 20px;background:#F8FAFC;border-bottom:1px solid #EBEDF0;justify-content:space-between;}
+    .nav-left{display:flex;align-items:center;gap:4px;}
+    .back{width:36px;height:36px;display:flex;align-items:center;justify-content:center;text-decoration:none;}
+    .nav-title{font-size:17px;font-weight:700;color:#111827;letter-spacing:-.3px;}
+    .nav-sub{font-size:13px;color:#6B7280;}
+
+    /* Filter */
+    .filter-bar{flex-shrink:0;display:flex;gap:6px;padding:10px 16px;overflow-x:auto;background:#F8FAFC;border-bottom:1px solid #EBEDF0;}
+    .filter-bar::-webkit-scrollbar{display:none;}
+    .fc{padding:7px 14px;border-radius:100px;font-size:13px;font-weight:500;font-family:inherit;border:1.5px solid #EBEDF0;background:#fff;color:#374151;white-space:nowrap;cursor:pointer;transition:all .15s;}
+    .fc.on{background:#111827;border-color:#111827;color:#fff;font-weight:600;}
+
+    /* Content */
+    .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px;}
+    .content::-webkit-scrollbar{display:none;}
+
+    /* Card */
+    .bid-card{background:#fff;border:1.5px solid #EBEDF0;border-radius:14px;padding:16px;margin-bottom:12px;position:relative;transition:border-color .15s;}
+    .bid-card.rec{padding-top:34px;}
+    .bid-card.chk{border-color:#FF7A00;box-shadow:0 0 0 3px rgba(255,122,0,.08);}
+    .rec-lbl{position:absolute;top:-1px;left:16px;background:#FF7A00;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:0 0 8px 8px;}
+    .card-chk{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:8px;border:2px solid #D1D5DB;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;z-index:2;}
+    .bid-card.chk .card-chk{background:#FF7A00;border-color:#FF7A00;}
+    .bid-top{display:flex;gap:12px;margin-bottom:12px;padding-right:40px;}
+    .av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0;}
+    .tn{font-size:15px;font-weight:700;color:#111827;letter-spacing:-.3px;margin-bottom:2px;}
+    .tsub{font-size:12px;color:#6B7280;margin-bottom:5px;}
+    .sr{display:flex;align-items:center;gap:2px;}
+    .sv{font-size:12px;font-weight:700;color:#111827;margin-left:2px;}
+    .rc{font-size:11px;color:#AEB4BD;}
+    .brow{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+    .b{padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;}
+    .be{background:#EFF6FF;color:#1D4ED8;}
+    .bs{background:#F0FDF4;color:#166534;}
+    .bc{background:#FDF4FF;color:#7E22CE;}
+    .bo{background:#FFF4EC;color:#FF7A00;}
+    .cdesc{font-size:13px;color:#6B7280;line-height:1.6;margin-bottom:12px;}
+    .cfoot{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #F0F1F3;}
+    .pl{font-size:11px;color:#6B7280;margin-bottom:2px;}
+    .pv{font-size:18px;font-weight:800;color:#111827;letter-spacing:-.4px;}
+    .pu{font-size:11px;color:#6B7280;}
+    .cbtns{display:flex;gap:7px;}
+    .btn-d{height:38px;padding:0 14px;background:#fff;color:#374151;border:1.5px solid #EBEDF0;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;}
+    .btn-c{height:38px;padding:0 14px;background:#FF7A00;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;}
+    .btn-c:active{filter:brightness(.88);}
+
+    /* Action bar */
+    .action-bar{flex-shrink:0;max-height:0;overflow:hidden;background:#fff;border-top:1px solid #EBEDF0;transition:max-height .3s cubic-bezier(.22,1,.36,1);}
+    .action-bar.show{max-height:72px;}
+    .ai{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;}
+    .ainfo{font-size:13px;color:#6B7280;}
+    .ainfo strong{color:#FF7A00;}
+    .abtns{display:flex;gap:8px;}
+    .ab{height:44px;padding:0 20px;border-radius:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;border:none;transition:opacity .15s;}
+    .ab-cmp{background:#F0F1F3;color:#111827;}
+    .ab-sel{background:#FF7A00;color:#fff;box-shadow:0 3px 10px rgba(255,122,0,.25);}
+    .ab:active{opacity:.8;}
+
+    /* Detail overlay */
+    .ov{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s;border-radius:42px;overflow:hidden;}
+    .ov.show{opacity:1;pointer-events:all;}
+    .sheet{background:#F8FAFC;border-radius:24px 24px 0 0;width:100%;max-height:88%;overflow-y:auto;transform:translateY(30px);transition:transform .3s cubic-bezier(.22,1,.36,1);}
+    .sheet::-webkit-scrollbar{display:none;}
+    .ov.show .sheet{transform:translateY(0);}
+    .sh-hd{width:36px;height:4px;background:#D1D5DB;border-radius:2px;margin:12px auto 0;}
+    .sh-top{padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #EBEDF0;}
+    .sh-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;}
+    .sh-nm{font-size:17px;font-weight:800;color:#111827;}
+    .sh-tt{font-size:12px;color:#6B7280;margin-top:2px;}
+    .sh-rt{display:flex;align-items:center;gap:3px;margin-top:4px;}
+    .sh-rv{font-size:12px;font-weight:700;color:#111827;margin-left:2px;}
+    .sh-rc{font-size:11px;color:#AEB4BD;}
+    .sh-body{padding:16px 20px;}
+    .sh-sec{margin-bottom:18px;}
+    .sh-sl{font-size:12px;font-weight:700;color:#AEB4BD;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+    .sh-p{font-size:14px;color:#374151;line-height:1.7;}
+    .cli{display:flex;gap:7px;align-items:flex-start;margin-bottom:5px;}
+    .cldot{width:5px;height:5px;background:#FF7A00;border-radius:50%;flex-shrink:0;margin-top:7px;}
+    .cltx{font-size:13px;color:#374151;line-height:1.6;}
+    .sh-tags{display:flex;flex-wrap:wrap;gap:6px;}
+    .sh-tg{padding:5px 12px;background:#fff;border:1px solid #EBEDF0;border-radius:100px;font-size:12px;color:#374151;}
+    .rv-box{background:#fff;border:1px solid #EBEDF0;border-radius:12px;padding:14px;}
+    .rv-q{font-size:13px;color:#374151;line-height:1.7;font-style:italic;}
+    .rv-by{font-size:11px;color:#AEB4BD;margin-top:5px;}
+    .sh-cta{padding:4px 20px 28px;}
+    .btn-shchat{width:100%;height:52px;background:#FF7A00;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(255,122,0,.3);}
+    .btn-shchat:active{filter:brightness(.88);}
+
+    /* Chat screen */
+    .chat-screen{position:absolute;inset:0;background:#F8FAFC;z-index:200;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);border-radius:42px;}
+    .chat-screen.show{transform:translateX(0);}
+    .ch-nav{flex-shrink:0;background:#fff;height:56px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid #EBEDF0;}
+    .ch-back{width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+    .ch-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;}
+    .ch-nm{font-size:15px;font-weight:700;color:#111827;}
+    .ch-st{font-size:11px;color:#10B981;}
+    .chat-msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+    .chat-msgs::-webkit-scrollbar{display:none;}
+    .datelbl{text-align:center;font-size:11px;color:#AEB4BD;margin:2px 0 6px;}
+    .msg{display:flex;gap:7px;align-items:flex-end;}
+    .msg.me{flex-direction:row-reverse;}
+    .msg-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;}
+    .bbl{max-width:210px;padding:10px 14px;border-radius:18px;font-size:13px;line-height:1.55;word-break:keep-all;}
+    .msg:not(.me) .bbl{background:#fff;color:#111827;border-radius:4px 18px 18px 18px;border:1px solid #EBEDF0;}
+    .msg.me .bbl{background:#FF7A00;color:#fff;border-radius:18px 4px 18px 18px;}
+    .mt{font-size:10px;color:#C9CDD4;flex-shrink:0;margin-bottom:2px;}
+    .chat-bar{flex-shrink:0;background:#fff;border-top:1px solid #EBEDF0;padding:8px 16px 28px;display:flex;align-items:center;gap:8px;}
+    .ch-in{flex:1;height:40px;background:#F4F5F7;border:none;border-radius:20px;padding:0 16px;font-size:14px;font-family:inherit;outline:none;color:#111827;}
+    .ch-snd{width:40px;height:40px;border-radius:50%;background:#FF7A00;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+    /* Tab bar */
+    .tab-bar{flex-shrink:0;background:#fff;border-top:1px solid #EBEDF0;display:flex;padding:10px 0 0;}
+    .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;padding-bottom:22px;cursor:pointer;}
+    .tab-l{font-size:10px;font-weight:500;color:#AEB4BD;}
+    .tab.on .tab-l{color:#FF7A00;}
+  </style>
+</head>
+<body>
+<div class="ps">
+  <div class="phone" id="phone">
+
+    <!-- Status Bar -->
+    <div class="sb">
+      <div class="di"></div>
+      <span class="sb-t">9:41</span>
+      <div class="sb-i">
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="#111827"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#111827" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="11" r="1" fill="#111827" stroke="none"/><path d="M5.5 8c1.4-1.4 3.6-1.4 5 0"/><path d="M3 5.5c2.8-2.8 7.2-2.8 10 0"/><path d="M.5 3C4.6-1 11.4-1 15.5 3"/></svg>
+        <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.5" stroke="#111827" stroke-opacity=".3"/><rect x="2" y="2" width="18" height="9" rx="2" fill="#111827"/><path d="M24 4.5v4a2 2 0 000-4z" fill="#111827" fill-opacity=".4"/></svg>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <div class="nav">
+      <div class="nav-left">
+        <a href="request.html" class="back">
+          <svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#111827" stroke-width="2.2" stroke-linecap="round"><path d="M8.5 1.5L1.5 8.5l7 7"/></svg>
+        </a>
+        <div>
+          <div class="nav-title">받은 견적</div>
+          <div class="nav-sub">훈련사 3명이 제안했어요</div>
+        </div>
+      </div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-bar">
+      <button class="fc on" onclick="doSort(this,'all')">전체</button>
+      <button class="fc" onclick="doSort(this,'rating')">별점 높은순</button>
+      <button class="fc" onclick="doSort(this,'price')">가격 낮은순</button>
+      <button class="fc" onclick="doSort(this,'exp')">경력 많은순</button>
+    </div>
+
+    <!-- Cards -->
+    <div class="content" id="cardsWrap"></div>
+
+    <!-- Action bar (slides up on select) -->
+    <div class="action-bar" id="actionBar">
+      <div class="ai">
+        <div class="ainfo" id="ainfo"><strong>0명</strong> 선택됨</div>
+        <div class="abtns">
+          <button class="ab ab-cmp" id="cmpBtn" onclick="goCompare()" style="display:none">비교하기</button>
+          <button class="ab ab-sel" onclick="goSelect()">선택하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail sheet overlay -->
+    <div class="ov" id="detailOv" onclick="if(event.target===this)closeDetail()">
+      <div class="sheet" id="detailSheet"></div>
+    </div>
+
+    <!-- Chat screen -->
+    <div class="chat-screen" id="chatScreen">
+      <div class="ch-nav">
+        <div class="ch-back" onclick="closeChat()">
+          <svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#111827" stroke-width="2.2" stroke-linecap="round"><path d="M8.5 1.5L1.5 8.5l7 7"/></svg>
+        </div>
+        <div class="ch-av" id="chAv">이</div>
+        <div style="flex:1">
+          <div class="ch-nm" id="chNm">이준영 훈련사</div>
+          <div class="ch-st">● 온라인</div>
+        </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      </div>
+      <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="chat-bar">
+        <input class="ch-in" id="chIn" type="text" placeholder="메시지 입력..." onkeydown="if(event.key==='Enter')sendMsg()">
+        <button class="ch-snd" onclick="sendMsg()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <a href="home.html" class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AEB4BD" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+        <span class="tab-l">홈</span>
+      </a>
+      <div class="tab on">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A00" stroke-width="2" stroke-linecap="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+        <span class="tab-l" style="color:#FF7A00">의뢰현황</span>
+      </div>
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AEB4BD" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/></svg>
+        <span class="tab-l">훈련사</span>
+      </div>
+      <div class="tab">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AEB4BD" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-l">마이</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Scale ── */
+  function scale(){const p=document.getElementById('phone');const s=Math.min(1,(window.innerWidth-32)/390,(window.innerHeight-32)/844);p.style.transform=`scale(${s})`;document.body.style.alignItems=s<1?'flex-start':'center';document.body.style.paddingTop=s<1?'16px':'0';}
+  scale();window.addEventListener('resize',scale);
+
+  /* ── Trainer Data ── */
+  const TRAINERS = [
+    {id:1,name:'이준영',initial:'이',grad:'linear-gradient(135deg,#667eea,#764ba2)',title:'행동교정 전문',area:'서울 마포구',rating:4.9,reviews:127,exp:8,price:55000,specs:['행동교정','공격성','짖음'],cert:'공인 훈련사',certType:'bc',method:'클리커 훈련',desc:'짖음·공격성 전문. 보호자 교육 병행으로 지속 효과를 보장합니다.',recommended:true,
+      detail:{intro:'안녕하세요, 반려견 행동교정 전문 훈련사 이준영입니다. 8년간 300마리 이상의 반려견을 교정했으며, 보호자와 함께하는 훈련을 추구합니다.',career:['반려견 행동교정 협회 공인 훈련사','서울 동물복지센터 자문 훈련사','반려견 행동학 전공'],tags:['방문훈련','클리커','보호자교육','행동분석'],review:'"2주 만에 짖음이 눈에 띄게 줄었어요! 훈련 방식이 과학적이에요."',reviewer:'말티즈 보호자'}},
+    {id:2,name:'박민서',initial:'박',grad:'linear-gradient(135deg,#f093fb,#f5576c)',title:'반려견 심리 전문',area:'서울 서대문구',rating:4.7,reviews:84,exp:5,price:45000,specs:['분리불안','심리케어'],cert:'방문 훈련',certType:'bo',method:'심리 기반',desc:'보호자와 반려견 모두를 케어하는 심리 기반 훈련법으로 접근합니다.',recommended:false,
+      detail:{intro:'반려견의 심리를 먼저 안정시키는 훈련을 진행합니다. 분리불안 교정에 특화되어 있습니다.',career:['동물행동 심리사 1급','반려견 분리불안 전문 과정 수료','심리 기반 훈련 강사'],tags:['방문훈련','심리상담','분리불안','긍정강화'],review:'"분리불안이 거의 사라졌어요. 강아지가 훨씬 행복해 보여요."',reviewer:'포메라니안 보호자'}},
+    {id:3,name:'최수진',initial:'최',grad:'linear-gradient(135deg,#4facfe,#00f2fe)',title:'소형견 전문',area:'서울 은평구',rating:4.8,reviews:56,exp:6,price:50000,specs:['소형견','긍정강화'],cert:'동물심리사',certType:'bc',method:'긍정 강화',desc:'소형견 특성에 맞는 긍정 강화 훈련으로 스트레스 없이 교정합니다.',recommended:false,
+      detail:{intro:'소형견 전문 훈련사로 말티즈, 포메라니안 등 소형견의 특성을 깊이 이해합니다.',career:['동물심리사 2급','소형견 행동 교정 전문 과정','긍정 강화 훈련 마스터'],tags:['방문훈련','긍정강화','소형견','스트레스프리'],review:'"강아지가 스트레스 없이 훈련받았어요. 방법이 정말 부드러워요."',reviewer:'시추 보호자'}},
+  ];
+
+  let sorted = [...TRAINERS];
+  let selected = new Set();
+
+  /* ── Stars helper ── */
+  function starsHTML(r) {
+    let h='';
+    for(let i=1;i<=5;i++){const f=i<=Math.floor(r)?'#F5B301':'#E5E7EB';h+=`<svg width="12" height="12" viewBox="0 0 24 24" fill="${f}"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;}
+    return h;
+  }
+
+  /* ── Render cards ── */
+  function renderCards() {
+    const wrap = document.getElementById('cardsWrap');
+    wrap.innerHTML = sorted.map(t => {
+      const isChk = selected.has(t.id);
+      return `
+      <div class="bid-card${t.recommended?' rec':''}${isChk?' chk':''}" id="card${t.id}">
+        ${t.recommended?'<div class="rec-lbl">🏆 추천</div>':''}
+        <div class="card-chk" id="chk${t.id}" onclick="toggleCheck(${t.id},event)">
+          <svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="bid-top">
+          <div class="av" style="background:${t.grad}">${t.initial}</div>
+          <div style="flex:1">
+            <div class="tn">${t.name} 훈련사</div>
+            <div class="tsub">${t.title} · ${t.area}</div>
+            <div class="sr">${starsHTML(t.rating)}<span class="sv">${t.rating}</span><span class="rc">(${t.reviews})</span></div>
+          </div>
+        </div>
+        <div class="brow">
+          <span class="b be">경력 ${t.exp}년</span>
+          ${t.specs.map(s=>`<span class="b bs">${s}</span>`).join('')}
+          <span class="b ${t.certType}">${t.cert}</span>
+        </div>
+        <div class="cdesc">${t.desc}</div>
+        <div class="cfoot">
+          <div><div class="pl">1회 비용</div><div><span class="pv">${t.price.toLocaleString()}</span><span class="pu">원 / 회</span></div></div>
+          <div class="cbtns">
+            <button class="btn-d" onclick="showDetail(${t.id})">상세보기</button>
+            <button class="btn-c" onclick="openChat(${t.id})">💬 채팅 상담</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    wrap.innerHTML += '<div style="height:8px"></div>';
+  }
+
+  /* ── Sort ── */
+  function doSort(el, type) {
+    document.querySelectorAll('.fc').forEach(c=>c.classList.remove('on'));
+    el.classList.add('on');
+    if(type==='rating') sorted=[...TRAINERS].sort((a,b)=>b.rating-a.rating);
+    else if(type==='price') sorted=[...TRAINERS].sort((a,b)=>a.price-b.price);
+    else if(type==='exp') sorted=[...TRAINERS].sort((a,b)=>b.exp-a.exp);
+    else sorted=[...TRAINERS];
+    renderCards();
+  }
+
+  /* ── Checkbox toggle (max 2) ── */
+  function toggleCheck(id, e) {
+    e.stopPropagation();
+    if(selected.has(id)){
+      selected.delete(id);
+    } else {
+      if(selected.size>=2){
+        const first=[...selected][0];
+        selected.delete(first);
+        const fc=document.getElementById('card'+first);
+        if(fc) fc.classList.remove('chk');
+      }
+      selected.add(id);
+    }
+    const card=document.getElementById('card'+id);
+    if(card) card.classList.toggle('chk',selected.has(id));
+    updateActionBar();
+  }
+
+  function updateActionBar() {
+    const bar=document.getElementById('actionBar');
+    const info=document.getElementById('ainfo');
+    const cmp=document.getElementById('cmpBtn');
+    bar.classList.toggle('show',selected.size>0);
+    info.innerHTML=`<strong>${selected.size}명</strong> 선택됨`;
+    cmp.style.display=selected.size>=2?'block':'none';
+  }
+
+  function goCompare() {
+    localStorage.setItem('pb_compare',JSON.stringify([...selected]));
+    window.location.href='bid-compare.html';
+  }
+
+  function goSelect() {
+    const id=[...selected][0];
+    if(!id)return;
+    const t=TRAINERS.find(x=>x.id===id);
+    if(t){localStorage.setItem('pb_trainer',t.name);window.location.href='trainer-select.html';}
+  }
+
+  /* ── Detail sheet ── */
+  function showDetail(id) {
+    const t=TRAINERS.find(x=>x.id===id);
+    if(!t)return;
+    document.getElementById('detailSheet').innerHTML=`
+      <div class="sh-hd"></div>
+      <div class="sh-top">
+        <div class="sh-av" style="background:${t.grad}">${t.initial}</div>
+        <div>
+          <div class="sh-nm">${t.name} 훈련사</div>
+          <div class="sh-tt">${t.title} · ${t.area}</div>
+          <div class="sh-rt">${starsHTML(t.rating)}<span class="sh-rv">${t.rating}</span><span class="sh-rc">(${t.reviews}개 리뷰)</span></div>
+        </div>
+      </div>
+      <div class="sh-body">
+        <div class="sh-sec">
+          <div class="sh-sl">소개</div>
+          <div class="sh-p">${t.detail.intro}</div>
+        </div>
+        <div class="sh-sec">
+          <div class="sh-sl">경력 및 자격</div>
+          ${t.detail.career.map(c=>`<div class="cli"><div class="cldot"></div><div class="cltx">${c}</div></div>`).join('')}
+        </div>
+        <div class="sh-sec">
+          <div class="sh-sl">훈련 방식</div>
+          <div class="sh-tags">${t.detail.tags.map(tg=>`<span class="sh-tg">${tg}</span>`).join('')}</div>
+        </div>
+        <div class="sh-sec">
+          <div class="sh-sl">1회 비용</div>
+          <div class="sh-p" style="font-size:22px;font-weight:800;color:#FF7A00;letter-spacing:-.4px">${t.price.toLocaleString()}원<span style="font-size:14px;color:#6B7280;font-weight:400"> / 회</span></div>
+        </div>
+        <div class="sh-sec">
+          <div class="sh-sl">최신 후기</div>
+          <div class="rv-box">
+            <div class="rv-q">${t.detail.review}</div>
+            <div class="rv-by">— ${t.detail.reviewer}</div>
+          </div>
+        </div>
+      </div>
+      <div class="sh-cta">
+        <button class="btn-shchat" onclick="closeDetail();openChat(${t.id})">
+          💬 채팅 상담 시작하기
+        </button>
+      </div>`;
+    document.getElementById('detailOv').classList.add('show');
+  }
+
+  function closeDetail(){document.getElementById('detailOv').classList.remove('show');}
+
+  /* ── Chat ── */
+  let currentChatId = null;
+  function openChat(id) {
+    const t=TRAINERS.find(x=>x.id===id);
+    if(!t)return;
+    currentChatId=id;
+    document.getElementById('chAv').style.background=t.grad;
+    document.getElementById('chAv').textContent=t.initial;
+    document.getElementById('chNm').textContent=t.name+' 훈련사';
+    const now=new Date();
+    const time=`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+    document.getElementById('chatMsgs').innerHTML=`
+      <div class="datelbl">오늘</div>
+      <div class="msg">
+        <div class="msg-av" style="background:${t.grad}">${t.initial}</div>
+        <div><div class="bbl">안녕하세요! 반려견 훈련 상담을 도와드릴게요 😊</div></div>
+        <span class="mt">${time}</span>
+      </div>
+      <div class="msg">
+        <div class="msg-av" style="background:${t.grad}">${t.initial}</div>
+        <div><div class="bbl">의뢰서를 검토해봤어요. 어떤 상황에서 문제행동이 가장 심한가요?</div></div>
+        <span class="mt">${time}</span>
+      </div>`;
+    document.getElementById('chatScreen').classList.add('show');
+  }
+
+  function closeChat(){document.getElementById('chatScreen').classList.remove('show');}
+
+  function sendMsg(){
+    const input=document.getElementById('chIn');
+    const val=input.value.trim();
+    if(!val)return;
+    const t=TRAINERS.find(x=>x.id===currentChatId);
+    const now=new Date();
+    const time=`${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+    const msgs=document.getElementById('chatMsgs');
+    msgs.innerHTML+=`<div class="msg me"><span class="mt">${time}</span><div class="bbl">${val}</div></div>`;
+    input.value='';
+    msgs.scrollTop=msgs.scrollHeight;
+    // Auto reply
+    setTimeout(()=>{
+      const replies=['네, 알겠습니다! 조금 더 자세히 말씀해 주시겠어요?','그렇군요. 제가 방문해서 직접 상황을 파악해 보면 좋을 것 같아요 😊','이런 경우 보통 4주 과정으로 충분히 개선할 수 있어요.'];
+      const r=replies[Math.floor(Math.random()*replies.length)];
+      const t2=TRAINERS.find(x=>x.id===currentChatId);
+      const now2=new Date();
+      const time2=`${now2.getHours()}:${String(now2.getMinutes()).padStart(2,'0')}`;
+      msgs.innerHTML+=`<div class="msg"><div class="msg-av" style="background:${t2.grad}">${t2.initial}</div><div><div class="bbl">${r}</div></div><span class="mt">${time2}</span></div>`;
+      msgs.scrollTop=msgs.scrollHeight;
+    },800);
+  }
+
+  /* ── Init ── */
+  renderCards();
+</script>
+</body>
+</html>

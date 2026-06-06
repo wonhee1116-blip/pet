@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PetBridge — 영상 업로드</title>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;background:#111;display:flex;align-items:center;justify-content:center;font-family:'Pretendard',-apple-system,sans-serif;}
+    .ps{position:relative;}
+    .ps::before{content:'';position:absolute;left:-3px;top:114px;width:3px;height:32px;background:#3a3a3c;border-radius:2px 0 0 2px;box-shadow:0 46px 0 #3a3a3c,0 92px 0 #3a3a3c;}
+    .ps::after{content:'';position:absolute;right:-3px;top:160px;width:3px;height:64px;background:#3a3a3c;border-radius:0 2px 2px 0;}
+    .phone{width:390px;height:844px;background:#F8FAFC;border-radius:52px;border:11px solid #222;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px #3a3a3c,0 50px 100px rgba(0,0,0,.85);transform-origin:top center;}
+
+    /* Status Bar */
+    .sb{flex-shrink:0;height:52px;background:#F8FAFC;display:flex;align-items:flex-end;justify-content:space-between;padding:0 28px 10px;position:relative;}
+    .di{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:120px;height:32px;background:#000;border-radius:18px;}
+    .sb-t{font-size:15px;font-weight:700;color:#111827;}
+    .sb-i{display:flex;align-items:center;gap:5px;}
+
+    /* Nav */
+    .nav{flex-shrink:0;height:52px;display:flex;align-items:center;padding:0 16px;background:#F8FAFC;border-bottom:1px solid #EBEDF0;position:relative;}
+    .back{width:36px;height:36px;display:flex;align-items:center;justify-content:center;text-decoration:none;}
+    .nav-title{position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:700;color:#111827;letter-spacing:-.3px;}
+
+    /* Content */
+    .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 20px 0;}
+    .content::-webkit-scrollbar{display:none;}
+
+    /* Title */
+    .page-title{font-size:24px;font-weight:800;color:#111827;letter-spacing:-.5px;line-height:1.3;margin-bottom:6px;}
+    .page-desc{font-size:14px;color:#6B7280;line-height:1.6;margin-bottom:20px;}
+
+    /* Upload area */
+    .upload-area{background:#F0F4FF;border:2px dashed #B8C5F5;border-radius:16px;padding:28px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:16px;cursor:pointer;transition:background .15s,border-color .15s;position:relative;}
+    .upload-area:active{background:#E8EFFE;}
+    .upload-area.has-file{border-color:#FF7A00;background:#FFF4EC;}
+    .upload-ic{width:60px;height:60px;border-radius:50%;background:#E0E8FF;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;}
+    .upload-area.has-file .upload-ic{background:#FFE5CC;}
+    .upload-title{font-size:16px;font-weight:700;color:#FF7A00;margin-bottom:5px;}
+    .upload-sub{font-size:13px;color:#6B7280;line-height:1.5;margin-bottom:16px;}
+    .upload-btns{display:flex;gap:10px;}
+    .ubtn{height:40px;padding:0 18px;border-radius:100px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;border:none;transition:opacity .15s;}
+    .ubtn:active{opacity:.8;}
+    .ubtn-cam{background:#FF7A00;color:#fff;}
+    .ubtn-gal{background:#fff;color:#374151;border:1.5px solid #EBEDF0;}
+    #videoInput{display:none;}
+
+    /* File card */
+    .file-card{background:#fff;border:1.5px solid #EBEDF0;border-radius:12px;padding:14px 16px;margin-bottom:14px;display:none;}
+    .file-card.show{display:block;}
+    .file-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+    .file-ic{width:40px;height:40px;border-radius:10px;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .file-name{font-size:14px;font-weight:700;color:#111827;letter-spacing:-.2px;margin-bottom:2px;word-break:break-all;}
+    .file-meta{font-size:12px;color:#6B7280;}
+    .file-done{font-size:12px;font-weight:700;color:#10B981;flex-shrink:0;margin-left:auto;}
+    .progress-track{height:4px;background:#F0F1F3;border-radius:2px;overflow:hidden;}
+    .progress-fill{height:100%;background:#10B981;border-radius:2px;width:0%;transition:width .05s linear;}
+
+    /* Guide */
+    .guide-card{background:#fff;border:1px solid #EBEDF0;border-radius:12px;padding:16px;margin-bottom:14px;}
+    .guide-title{font-size:14px;font-weight:700;color:#111827;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+    .guide-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:13px;color:#374151;line-height:1.5;}
+    .guide-item:last-child{margin-bottom:0;}
+    .gi-icon{flex-shrink:0;font-size:14px;margin-top:1px;}
+
+    /* Tip box */
+    .tip-box{background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:14px 16px;margin-bottom:20px;}
+    .tip-title{font-size:13px;font-weight:700;color:#92400E;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+    .tip-text{font-size:13px;color:#92400E;line-height:1.6;}
+    .tip-text strong{color:#D97706;}
+
+    /* Bottom CTA */
+    .bottom-cta{flex-shrink:0;padding:12px 20px 28px;background:#F8FAFC;border-top:1px solid #EBEDF0;}
+    .btn-p{width:100%;height:56px;background:#FF7A00;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(255,122,0,.3);text-decoration:none;}
+    .btn-p:active{filter:brightness(.88);}
+    .btn-skip{display:block;text-align:center;font-size:13px;color:#AEB4BD;margin-top:10px;text-decoration:none;cursor:pointer;}
+    .btn-skip:active{color:#6B7280;}
+  </style>
+</head>
+<body>
+<div class="ps">
+  <div class="phone" id="phone">
+
+    <!-- Status Bar -->
+    <div class="sb">
+      <div class="di"></div>
+      <span class="sb-t">9:41</span>
+      <div class="sb-i">
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="#111827"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#111827" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="11" r="1" fill="#111827" stroke="none"/><path d="M5.5 8c1.4-1.4 3.6-1.4 5 0"/><path d="M3 5.5c2.8-2.8 7.2-2.8 10 0"/><path d="M.5 3C4.6-1 11.4-1 15.5 3"/></svg>
+        <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.5" stroke="#111827" stroke-opacity=".3"/><rect x="2" y="2" width="18" height="9" rx="2" fill="#111827"/><path d="M24 4.5v4a2 2 0 000-4z" fill="#111827" fill-opacity=".4"/></svg>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <div class="nav">
+      <a href="diagnosis.html" class="back">
+        <svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#111827" stroke-width="2.2" stroke-linecap="round"><path d="M8.5 1.5L1.5 8.5l7 7"/></svg>
+      </a>
+      <span class="nav-title">영상 업로드</span>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="page-title">문제행동 영상을<br>업로드해주세요</div>
+      <div class="page-desc">영상을 분석해 더 정확한 진단을 제공합니다</div>
+
+      <!-- Upload area -->
+      <div class="upload-area" id="uploadArea" onclick="document.getElementById('videoInput').click()">
+        <div class="upload-ic" id="uploadIc">🎬</div>
+        <div class="upload-title">영상 선택하기</div>
+        <div class="upload-sub">갤러리에서 선택하거나<br>직접 촬영하세요</div>
+        <div class="upload-btns" onclick="event.stopPropagation()">
+          <button class="ubtn ubtn-cam" onclick="document.getElementById('videoInput').click()">
+            📷 촬영
+          </button>
+          <button class="ubtn ubtn-gal" onclick="document.getElementById('videoInput').click()">
+            🗂️ 갤러리
+          </button>
+        </div>
+        <input type="file" id="videoInput" accept="video/*" capture="environment">
+      </div>
+
+      <!-- File card -->
+      <div class="file-card" id="fileCard">
+        <div class="file-top">
+          <div class="file-ic">🎥</div>
+          <div style="flex:1;min-width:0;">
+            <div class="file-name" id="fileName">코코_짖음영상_0514.mp4</div>
+            <div class="file-meta" id="fileMeta">23.4 MB · 00:42</div>
+          </div>
+          <div class="file-done" id="fileDone" style="display:none">완료</div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <!-- Guide -->
+      <div class="guide-card">
+        <div class="guide-title">📋 촬영 가이드</div>
+        <div class="guide-item"><span class="gi-icon">✅</span>문제행동이 발생하는 순간을 촬영하세요</div>
+        <div class="guide-item"><span class="gi-icon">✅</span>반려견 전신이 보이도록 촬영하세요</div>
+        <div class="guide-item"><span class="gi-icon">✅</span>밝은 환경에서 촬영하세요</div>
+        <div class="guide-item"><span class="gi-icon">⚠️</span>30초~3분 분량이 적당합니다</div>
+        <div class="guide-item"><span class="gi-icon">❌</span>흔들리는 영상은 분석이 어렵습니다</div>
+      </div>
+
+      <!-- Tip -->
+      <div class="tip-box">
+        <div class="tip-title">💡 분석 정확도 높이는 팁</div>
+        <div class="tip-text">문제행동 직전, 도중, 직후 영상을 각각 업로드하면<br><strong>분석 정확도가 30% 향상</strong>됩니다.</div>
+      </div>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="bottom-cta">
+      <button class="btn-p" id="nextBtn" onclick="goNext()">
+        다음
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <a class="btn-skip" onclick="window.location.href='diagnosis-result.html'">영상 없이 진단하기</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* Scale */
+  function scale(){const p=document.getElementById('phone');const s=Math.min(1,(window.innerWidth-32)/390,(window.innerHeight-32)/844);p.style.transform=`scale(${s})`;document.body.style.alignItems=s<1?'flex-start':'center';document.body.style.paddingTop=s<1?'16px':'0';}
+  scale();window.addEventListener('resize',scale);
+
+  let videoUploaded = false;
+
+  /* File input handler */
+  document.getElementById('videoInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Show file card
+    const card = document.getElementById('fileCard');
+    card.classList.add('show');
+
+    // File name
+    document.getElementById('fileName').textContent = file.name;
+
+    // File size (fake duration)
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+    document.getElementById('fileMeta').textContent = `${sizeMB} MB · 00:${Math.floor(Math.random()*50+10)}`;
+
+    // Update upload area
+    const area = document.getElementById('uploadArea');
+    area.classList.add('has-file');
+    document.getElementById('uploadIc').textContent = '✅';
+
+    // Animate progress bar
+    document.getElementById('fileDone').style.display = 'none';
+    const fill = document.getElementById('progressFill');
+    fill.style.background = '#FF7A00';
+    fill.style.width = '0%';
+    let pct = 0;
+    const iv = setInterval(() => {
+      pct += Math.random() * 12 + 4;
+      if (pct >= 100) {
+        pct = 100;
+        clearInterval(iv);
+        fill.style.background = '#10B981';
+        document.getElementById('fileDone').style.display = 'block';
+        videoUploaded = true;
+        // Update button
+        document.getElementById('nextBtn').innerHTML = `분석 시작하기 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+      }
+      fill.style.width = pct + '%';
+    }, 80);
+
+    // Scroll to show file card
+    document.querySelector('.content').scrollTop = 120;
+  });
+
+  function goNext() {
+    localStorage.setItem('pb_hasVideo', videoUploaded ? '1' : '0');
+    window.location.href = 'diagnosis-result.html';
+  }
+</script>
+</body>
+</html>
