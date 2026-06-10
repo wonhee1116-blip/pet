@@ -248,6 +248,44 @@
       detail:{intro:'소형견 전문 훈련사로 말티즈, 포메라니안 등 소형견의 특성을 깊이 이해합니다.',career:['동물심리사 2급','소형견 행동 교정 전문 과정','긍정 강화 훈련 마스터'],tags:['방문훈련','긍정강화','소형견','스트레스프리'],review:'"강아지가 스트레스 없이 훈련받았어요. 방법이 정말 부드러워요."',reviewer:'시추 보호자'}},
   ];
 
+  /* ── Read request settings from localStorage ── */
+  const pb_budget   = localStorage.getItem('pb_budget')   || '5만원대';
+  const pb_duration = localStorage.getItem('pb_duration') || '4주';
+  const pb_session  = localStorage.getItem('pb_session')  || '주 2회';
+  const pb_urgent   = localStorage.getItem('pb_urgent')   === 'true';
+  const pb_method   = localStorage.getItem('pb_method')   || '방문 훈련';
+
+  /* 예산 → 회당 기준가 */
+  const budgetBase = {'3만원대':35000,'5만원대':55000,'7만원대':75000,'협의 가능':55000};
+  const basePrice  = budgetBase[pb_budget] || 55000;
+
+  /* 훈련사별 가격 오프셋 (개성 반영) */
+  const priceOffset = {1: 0, 2: -10000, 3: -5000};
+
+  /* 주 횟수 → 숫자 */
+  const sessionCount = {'주 1회':1,'주 2회':2,'주 3회':3,'집중반':5};
+  const weeksCount   = {'2주':2,'4주':4,'8주':8,'12주+':12,'자유':4};
+  const sessPerWeek  = sessionCount[pb_session]  || 2;
+  const weeks        = weeksCount[pb_duration]   || 4;
+
+  /* 각 훈련사에 계산된 가격 적용 */
+  TRAINERS.forEach(t => {
+    let p = basePrice + (priceOffset[t.id] || 0);
+    if (pb_urgent) p = Math.round(p * 1.1);
+    t.price = p;
+    t.totalPrice = p * sessPerWeek * weeks;
+  });
+
+  /* 요청 조건 요약 배너 삽입 */
+  (function insertBanner() {
+    const urgentTag = pb_urgent ? ' · <span style="color:#DC2626">⚡긴급</span>' : '';
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:#FFF4EC;border-bottom:1px solid #FFD4A3;padding:10px 16px;font-size:12px;color:#92400E;line-height:1.6;flex-shrink:0;';
+    banner.innerHTML = `📋 <strong>의뢰 조건</strong>&nbsp; ${pb_method} · ${pb_duration} · ${pb_session} · ${pb_budget}${urgentTag}`;
+    const filterBar = document.querySelector('.filter-bar');
+    filterBar.parentNode.insertBefore(banner, filterBar);
+  })();
+
   let sorted = [...TRAINERS];
   let selected = new Set();
 
@@ -284,7 +322,11 @@
         </div>
         <div class="cdesc">${t.desc}</div>
         <div class="cfoot">
-          <div><div class="pl">1회 비용</div><div><span class="pv">${t.price.toLocaleString()}</span><span class="pu">원 / 회</span></div></div>
+          <div>
+            <div class="pl">1회 비용</div>
+            <div><span class="pv">${t.price.toLocaleString()}</span><span class="pu">원 / 회</span></div>
+            <div style="font-size:11px;color:#9CA3AF;margin-top:2px;">총 예상 <strong style="color:#FF7A00">${t.totalPrice.toLocaleString()}원</strong></div>
+          </div>
           <div class="cbtns">
             <button class="btn-d" onclick="showDetail(${t.id})">상세보기</button>
             <button class="btn-c" onclick="openChat(${t.id})">💬 채팅 상담</button>
@@ -376,6 +418,7 @@
         <div class="sh-sec">
           <div class="sh-sl">1회 비용</div>
           <div class="sh-p" style="font-size:22px;font-weight:800;color:#FF7A00;letter-spacing:-.4px">${t.price.toLocaleString()}원<span style="font-size:14px;color:#6B7280;font-weight:400"> / 회</span></div>
+          <div style="font-size:13px;color:#6B7280;margin-top:4px;">${pb_duration} · ${pb_session} 기준 총 <strong style="color:#FF7A00">${t.totalPrice.toLocaleString()}원</strong></div>
         </div>
         <div class="sh-sec">
           <div class="sh-sl">최신 후기</div>

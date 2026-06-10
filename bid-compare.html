@@ -94,7 +94,8 @@
       <span class="nav-title">견적 비교</span>
     </div>
 
-    <!-- Tabs (dynamic) -->
+    <!-- Request summary banner -->
+    <div id="reqBanner" style="background:#FFF4EC;border-bottom:1px solid #FFD4A3;padding:9px 16px;font-size:12px;color:#92400E;flex-shrink:0;"></div>
     <div class="trainer-tabs" id="trainerTabs"></div>
 
     <div class="content">
@@ -123,12 +124,34 @@
   function scale(){const p=document.getElementById('phone');const s=Math.min(1,(window.innerWidth-32)/390,(window.innerHeight-32)/844);p.style.transform=`scale(${s})`;document.body.style.alignItems=s<1?'flex-start':'center';document.body.style.paddingTop=s<1?'16px':'0';}
   scale();window.addEventListener('resize',scale);
 
+  /* ── Read request settings ── */
+  const pb_budget   = localStorage.getItem('pb_budget')   || '5만원대';
+  const pb_duration = localStorage.getItem('pb_duration') || '4주';
+  const pb_session  = localStorage.getItem('pb_session')  || '주 2회';
+  const pb_urgent   = localStorage.getItem('pb_urgent')   === 'true';
+  const pb_method   = localStorage.getItem('pb_method')   || '방문 훈련';
+
+  const budgetBase  = {'3만원대':35000,'5만원대':55000,'7만원대':75000,'협의 가능':55000};
+  const basePrice   = budgetBase[pb_budget] || 55000;
+  const priceOffset = {1:0, 2:-10000, 3:-5000};
+  const sessionCount = {'주 1회':1,'주 2회':2,'주 3회':3,'집중반':5};
+  const weeksCount   = {'2주':2,'4주':4,'8주':8,'12주+':12,'자유':4};
+  const sessPerWeek  = sessionCount[pb_session]  || 2;
+  const weeks        = weeksCount[pb_duration]   || 4;
+
   /* ── All trainer data (same as bid-list) ── */
   const ALL = [
     {id:1,name:'이준영',initial:'이',grad:'linear-gradient(135deg,#667eea,#764ba2)',title:'행동교정 전문',area:'서울 마포구',rating:4.9,reviews:127,exp:8,price:55000,specs:['행동교정','공격성','짖음'],cert:'공인 훈련사',method:'클리커 훈련',desc:'짖음·공격성 전문. 보호자 교육 병행으로 지속 효과를 보장합니다.',review:'"2주 만에 짖음이 눈에 띄게 줄었어요!"',reviewer:'말티즈 보호자'},
     {id:2,name:'박민서',initial:'박',grad:'linear-gradient(135deg,#f093fb,#f5576c)',title:'반려견 심리 전문',area:'서울 서대문구',rating:4.7,reviews:84,exp:5,price:45000,specs:['분리불안','심리케어'],cert:'방문 훈련',method:'심리 기반',desc:'보호자와 반려견 모두를 케어하는 심리 기반 훈련법.',review:'"분리불안이 거의 사라졌습니다."',reviewer:'포메라니안 보호자'},
     {id:3,name:'최수진',initial:'최',grad:'linear-gradient(135deg,#4facfe,#00f2fe)',title:'소형견 전문',area:'서울 은평구',rating:4.8,reviews:56,exp:6,price:50000,specs:['소형견','긍정강화'],cert:'동물심리사',method:'긍정 강화',desc:'소형견 특성에 맞는 긍정 강화 훈련.',review:'"강아지가 스트레스 없이 훈련받았어요."',reviewer:'시추 보호자'},
   ];
+
+  ALL.forEach(t => {
+    let p = basePrice + (priceOffset[t.id] || 0);
+    if (pb_urgent) p = Math.round(p * 1.1);
+    t.price = p;
+    t.totalPrice = p * sessPerWeek * weeks;
+  });
 
   /* ── Load selected IDs ── */
   const ids = JSON.parse(localStorage.getItem('pb_compare') || '[1,2]');
@@ -199,6 +222,16 @@
         rows: [trainers.map(t=>`<div class="cv">${t.price.toLocaleString()}원</div>${priceBadge(t)}`)]
       },
       {
+        ic:'🧾', lbl:`총 예상 비용 (${pb_duration}·${pb_session})`,
+        rows: [trainers.map(t => {
+          const minTotal = Math.min(...trainers.map(x=>x.totalPrice));
+          const badge = t.totalPrice===minTotal
+            ? `<div class="cbadge cb-best">최저</div>`
+            : `<div class="cbadge cb-norm">표준</div>`;
+          return `<div class="cv" style="color:#FF7A00">${t.totalPrice.toLocaleString()}원</div>${badge}`;
+        })]
+      },
+      {
         ic:'🏅', lbl:'경력 및 자격',
         rows: [trainers.map(t=>`<div class="cv">${t.exp}년</div>${expBadge(t)}`)]
       },
@@ -246,6 +279,13 @@
   renderTops();
   renderTable();
   renderWinner();
+
+  /* ── Fill banner ── */
+  (function() {
+    const urgentTag = pb_urgent ? ' · <span style="color:#DC2626">⚡긴급</span>' : '';
+    document.getElementById('reqBanner').innerHTML =
+      `📋 <strong>의뢰 조건</strong>&nbsp; ${pb_method} · ${pb_duration} · ${pb_session} · ${pb_budget}${urgentTag}`;
+  })();
 </script>
 </body>
 </html>

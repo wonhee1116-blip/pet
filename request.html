@@ -200,7 +200,7 @@
     </div>
 
     <div class="bottom-cta">
-      <button class="btn-p" onclick="showModal()">
+      <button class="btn-p" onclick="saveAndRequest()">
         견적 요청하기
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>
@@ -215,6 +215,34 @@
   function selChip(el,id){document.querySelectorAll(`#${id} .chip`).forEach(c=>c.classList.remove('on'));el.classList.add('on');}
 
   function showModal() {
+    document.getElementById('modalOverlay').classList.add('show');
+  }
+
+  function saveAndRequest() {
+    // 훈련 방식
+    const methodEl = document.querySelector('#methodSeg .seg-btn.on');
+    const method = methodEl ? methodEl.textContent.trim() : '방문 훈련';
+
+    // 훈련 기간
+    const durationEl = document.querySelector('#durationChips .chip.on');
+    const duration = durationEl ? durationEl.textContent.trim() : '4주';
+
+    // 주 훈련 횟수
+    const sessionEl = document.querySelector('#sessionChips .chip.on');
+    const session = sessionEl ? sessionEl.textContent.trim() : '주 2회';
+
+    // 예산
+    const budgetEl = document.querySelector('#budgetChips .chip.on');
+    const budget = budgetEl ? budgetEl.textContent.trim() : '5만원대';
+
+    // 긴급 여부
+    localStorage.setItem('pb_method', method);
+    localStorage.setItem('pb_duration', duration);
+    localStorage.setItem('pb_session', session);
+    localStorage.setItem('pb_budget', budget);
+    localStorage.setItem('pb_urgent', urgentOn ? 'true' : 'false');
+
+    // 모달 표시 후 이동
     document.getElementById('modalOverlay').classList.add('show');
   }
 

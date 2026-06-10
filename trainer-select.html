@@ -141,22 +141,26 @@
             </div>
           </div>
         </div>
-        <div class="trainer-card-body">
+        <div class="trainer-card-body" id="trainerCardBody">
           <div class="info-row">
-            <span class="info-label">훈련 방법</span>
-            <span class="info-val">방문 훈련</span>
+            <span class="info-label">훈련 방식</span>
+            <span class="info-val" id="infoMethod">방문 훈련</span>
           </div>
           <div class="info-row">
             <span class="info-label">훈련 기간</span>
-            <span class="info-val">4주 · 주 2회</span>
+            <span class="info-val" id="infoDuration">4주 · 주 2회</span>
           </div>
           <div class="info-row">
-            <span class="info-label">1회 비용</span>
-            <span class="info-val info-orange">55,000원</span>
+            <span class="info-label">1회 예산</span>
+            <span class="info-val info-orange" id="infoBudget">5만원대</span>
+          </div>
+          <div class="info-row" id="urgentRow" style="display:none;">
+            <span class="info-label">긴급 요청</span>
+            <span class="info-val" style="color:#DC2626;">⚡ 긴급 (+10%)</span>
           </div>
           <div class="info-row">
             <span class="info-label">총 예상 비용</span>
-            <span class="info-val info-orange">440,000원</span>
+            <span class="info-val info-orange" id="infoTotal">—</span>
           </div>
         </div>
       </div>
@@ -224,6 +228,53 @@
   document.getElementById('trainerName').textContent = trainer + ' 훈련사';
   document.getElementById('avatarText').textContent = trainer[0];
   document.getElementById('successSub').textContent = `${trainer} 훈련사와 함께\n훈련을 시작할 준비가 됐어요 🎉`;
+
+  // Load request info from localStorage
+  const method   = localStorage.getItem('pb_method')   || '방문 훈련';
+  const duration = localStorage.getItem('pb_duration') || '4주';
+  const session  = localStorage.getItem('pb_session')  || '주 2회';
+  const budget   = localStorage.getItem('pb_budget')   || '5만원대';
+  const urgent   = localStorage.getItem('pb_urgent')   === 'true';
+
+  // Display method, duration+session
+  document.getElementById('infoMethod').textContent   = method;
+  document.getElementById('infoDuration').textContent = `${duration} · ${session}`;
+  document.getElementById('infoBudget').textContent   = budget;
+
+  // Show urgent row
+  if (urgent) document.getElementById('urgentRow').style.display = 'flex';
+
+  // Next step label: update if center/online
+  const nextStepText = document.querySelector('.next-step .ns-text');
+  if (method === '센터 훈련') nextStepText.textContent = '훈련사가 24시간 내 연락드려요 (센터 방문 안내)';
+  else if (method === '온라인 훈련') nextStepText.textContent = '훈련사가 24시간 내 연락드려요 (온라인 링크 전송)';
+
+  // Calculate estimated total cost
+  function parseBudgetPerSession(b) {
+    const map = {'3만원대':35000,'5만원대':55000,'7만원대':75000,'협의 가능':null};
+    return map[b] ?? null;
+  }
+  function parseWeekCount(d) {
+    const map = {'2주':2,'4주':4,'8주':8,'12주+':12,'자유':null};
+    return map[d] ?? null;
+  }
+  function parseSessionsPerWeek(s) {
+    const map = {'주 1회':1,'주 2회':2,'주 3회':3,'집중반':5};
+    return map[s] ?? null;
+  }
+
+  const pricePerSession = parseBudgetPerSession(budget);
+  const weeks = parseWeekCount(duration);
+  const sessionsPerWeek = parseSessionsPerWeek(session);
+
+  if (pricePerSession && weeks && sessionsPerWeek) {
+    let total = pricePerSession * weeks * sessionsPerWeek;
+    if (urgent) total = Math.round(total * 1.1);
+    document.getElementById('infoTotal').textContent =
+      total.toLocaleString() + '원' + (urgent ? ' (긴급 10% 포함)' : '');
+  } else {
+    document.getElementById('infoTotal').textContent = '훈련사와 협의';
+  }
 
   // Adjust card gradient based on trainer
   const gradsMap = {'이준영':'linear-gradient(135deg,#667eea,#764ba2)','박민서':'linear-gradient(135deg,#f093fb,#f5576c)','최수진':'linear-gradient(135deg,#4facfe,#00f2fe)'};
